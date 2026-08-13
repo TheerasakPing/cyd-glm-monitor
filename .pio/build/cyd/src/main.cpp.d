@@ -335,4 +335,16 @@
  /Users/baemon/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src/detail/RequestHandler.h \
  /Users/baemon/.platformio/packages/framework-arduinoespressif32/libraries/Update/src/Update.h \
  /Users/baemon/.platformio/packages/framework-arduinoespressif32/cores/esp32/MD5Builder.h \
- /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_rom/include/esp_rom_md5.h
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_rom/include/esp_rom_md5.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
+ .pio/libdeps/cyd/WiFiManager/WiFiManager.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/esp_wifi_private.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_crypto_types.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/wifi_os_adapter.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_default.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/libraries/DNSServer/src/DNSServer.h \
+ /Users/baemon/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
+ .pio/libdeps/cyd/WiFiManager/wm_strings_en.h \
+ .pio/libdeps/cyd/WiFiManager/wm_consts_en.h
