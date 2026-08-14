@@ -87,12 +87,27 @@ void panel(int x, int y, int w, int h, const char* title, uint16_t accent=ACCENT
 }
 
 // API
+void drawSpinner();
+void clearSpinner();
 String httpsGet(const char* path) {
   WiFiClientSecure c; c.setInsecure(); c.setTimeout(12000);
   if(!c.connect(HOST,443)) return "";
   c.print(String("GET ")+path+" HTTP/1.1\r\nHost: "+HOST+"\r\nAuthorization: Bearer "+String(apiKey)+"\r\nConnection: close\r\n\r\n");
-  String b=""; bool he=false; unsigned long to=millis()+15000;
-  while(c.connected()||c.available()){if(millis()>to)break;if(!he){String l=c.readStringUntil('\n');if(l=="\r"||!l.length())he=true;continue;}if(c.available())b+=(char)c.read();}
+  String b=""; bool he=false; unsigned long to=millis()+15000; unsigned long lastSpin=0;
+  unsigned long spinStart=millis();
+  while(c.connected()||c.available()){
+    if(millis()>to)break;
+    if(millis()-lastSpin>120){drawSpinner();lastSpin=millis();}
+    if(!he){String l=c.readStringUntil('\n');if(l=="\r"||!l.length())he=true;continue;}
+    if(c.available())b+=(char)c.read();
+    yield();
+  }
+  // Ensure spinner visible at least 600ms so user sees it
+  while(millis()-spinStart < 600) {
+    if(millis()-lastSpin>120){drawSpinner();lastSpin=millis();}
+    delay(10);
+  }
+  clearSpinner();
   c.stop(); int i=b.indexOf('{'); return i<0?"":b.substring(i);
 }
 
@@ -124,6 +139,28 @@ void touchInit() {
   touchSPI.begin(T_CLK, T_MISO, T_MOSI, T_CS);
 }
 
+// LDR light sensor on GPIO34 — auto brightness
+#define LDR_PIN 34
+int lastBrightness = -1;
+
+void autoBrightness() {
+  int raw = analogRead(LDR_PIN);  // 0-4095
+  // LDR: high=dark, low=bright (voltage divider)
+  // Map: dark room → dim screen, bright room → bright screen
+  int brightness;
+  if(raw > 3000)      brightness = 25;   // very dark
+  else if(raw > 2000) brightness = 50;   // dark
+  else if(raw > 1200) brightness = 90;   // dim
+  else if(raw > 600)  brightness = 140;  // normal indoor
+  else                brightness = 200;  // bright
+
+  if(brightness != lastBrightness) {
+    ledcWrite(0, brightness);
+    lastBrightness = brightness;
+  }
+  Serial.printf("LDR=%d bri=%d\n", raw, brightness);
+}
+
 bool touchPressed() {
   touchSPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
   digitalWrite(T_CS, LOW);
@@ -134,6 +171,26 @@ bool touchPressed() {
   touchSPI.endTransaction();
   return (((hi << 8) | lo) >> 3) > 200;
 }
+// Loading indicator — animated dots in top bar next to title
+// Position: x=90-130, y=4 — inside top bar, never overdrawn
+int loadDots = 0;
+void drawSpinner() {
+  // Draw "..." animating at fixed spot in top bar
+  tft.fillRect(92, 2, 40, 12, PANELH);
+  loadDots = (loadDots + 1) % 4;
+  for(int i=0; i<3; i++) {
+    if(i < loadDots)
+      tft.fillCircle(98 + i*10, 8, 2, ACCENT);
+    else
+      tft.drawCircle(98 + i*10, 8, 2, BORDER);
+  }
+}
+
+void clearSpinner() {
+  // Restore top bar area
+  tft.fillRect(92, 2, 40, 12, PANELH);
+}
+
 #define NDAYS 30
 unsigned long dayTokens[NDAYS];
 int dayCount = 0;
@@ -607,6 +664,13 @@ void loop() {
   static unsigned long lastUI=0, lastPulse=0, lastMonthly=0;
 
   ota.handleClient();
+
+  // Auto brightness every 5s
+  static unsigned long lastLDR = 0;
+  if(millis()-lastLDR > 5000) {
+    autoBrightness();
+    lastLDR = millis();
+  }
 
   // Touch to switch pages
   static unsigned long lastTouch = 0;
